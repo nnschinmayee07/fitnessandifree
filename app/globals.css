@@ -1,26 +1,150 @@
 @import "tailwindcss";
 
+/* ── Custom fonts ── */
+@font-face {
+  font-family: 'ToxicRebel';
+  src: url('/fonts/ToxicRebel-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'AmericanCaptain';
+  src: url('/fonts/AmericanCaptain.otf') format('opentype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JerseyM54';
+  src: url('/fonts/JerseyM54.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'CaviarDreams';
+  src: url('/fonts/CaviarDreams.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'CaviarDreams';
+  src: url('/fonts/CaviarDreams_Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ModernSans';
+  src: url('/fonts/ModernSans-Light.otf') format('opentype');
+  font-weight: 300;
+  font-display: swap;
+}
+
+/* ── Design tokens ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-primary:        #2563EB;
+  --color-primary-hover:  #1D4ED8;
+  --color-primary-light:  #EEF4FF;
+  --color-primary-mid:    #BFDBFE;
+  --color-success:        #22C55E;
+  --color-success-light:  #F0FDF4;
+  --color-success-mid:    #BBF7D0;
+  --color-warning:        #F59E0B;
+  --color-warning-light:  #FFFBEB;
+  --color-danger:         #EF4444;
+  --color-danger-light:   #FEF2F2;
+  --color-navy:           #0A1628;
+  --color-navy-700:       #12253F;
+  --color-navy-500:       #1E3A5F;
+  --color-surface:        #F8FAFC;
+  --color-surface-2:      #F1F5F9;
+  --color-border:         #E2E8F0;
+  --color-text-1:         #0F172A;
+  --color-text-2:         #475569;
+  --color-text-3:         #94A3B8;
+  --color-text-4:         #CBD5E1;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Dark mode tokens ── */
+.dark {
+  --color-primary:        #3B82F6;
+  --color-primary-hover:  #2563EB;
+  --color-primary-light:  #1E3A5F;
+  --color-primary-mid:    #1D4ED8;
+  --color-success:        #4ADE80;
+  --color-success-light:  #052e16;
+  --color-success-mid:    #166534;
+  --color-warning:        #FCD34D;
+  --color-warning-light:  #1c1300;
+  --color-danger:         #F87171;
+  --color-danger-light:   #2d0a0a;
+  --color-navy:           #0A1628;
+  --color-navy-700:       #0D1F38;
+  --color-navy-500:       #1E3A5F;
+  --color-surface:        #0D1117;
+  --color-surface-2:      #161B22;
+  --color-border:         #30363D;
+  --color-text-1:         #F0F6FC;
+  --color-text-2:         #8B949E;
+  --color-text-3:         #6E7681;
+  --color-text-4:         #484F58;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-tap-highlight-color: transparent; height: 100%; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'CaviarDreams', sans-serif;
+  color: var(--color-text-1);
+  background: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  min-height: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ── Font utility classes ── */
+.font-display  { font-family: 'ToxicRebel', sans-serif !important; }
+.font-heading  { font-family: 'AmericanCaptain', sans-serif !important; }
+.font-body     { font-family: 'CaviarDreams', sans-serif !important; }
+.font-metric   { font-family: 'JerseyM54', sans-serif !important; }
+.font-caption  { font-family: 'ModernSans', sans-serif !important; }
+
+/* ── Scrollbar hidden on mobile ── */
+::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ── Scrollbar hide utility ── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── PWA safe area ── */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* ── Page transition ── */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+main > * { animation: page-in 0.3s ease-out both; }
+
+/* ── Bento card hover ── */
+.bento-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.bento-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(15,23,42,.09);
+}
+
+/* ── Smooth focus ring ── */
+:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ── Selection color ── */
+::selection {
+  background: #2563EB;
+  color: white;
 }
