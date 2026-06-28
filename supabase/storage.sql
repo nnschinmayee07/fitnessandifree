@@ -1,0 +1,27 @@
+-- =============================================================================
+-- meal-images Storage Bucket — Configuration Reference
+-- =============================================================================
+--
+-- Supabase Storage buckets are managed through the Supabase dashboard or CLI
+-- and cannot be created via SQL migrations.  This file documents the required
+-- bucket configuration so it is version-controlled alongside the schema.
+--
+-- Bucket name  : meal-images
+-- Public access: false
+--   Objects in this bucket are NOT accessible via unauthenticated public URLs.
+--   Every access requires a signed URL obtained from the Supabase Storage API.
+--
+-- Signed URL validity window: 1 second (minimum) – 3600 seconds (maximum)
+--   Callers MUST pass a value within this range to
+--   supabase.storage.from('meal-images').createSignedUrl(path, expiresIn).
+--   Requests without a valid signed URL are rejected with an access-denied
+--   response from Supabase Storage.
+--
+-- How to create this bucket before first use:
+--   See supabase/README.md for full instructions (dashboard and CLI methods).
+--
+-- API route that depends on this bucket:
+--   app/api/nutrition/analyze/route.ts
+--
+-- Relevant requirements: 5.4, 5.5
+-- =============================================================================

@@ -1,7 +1,8 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import DonutRing from "@/components/ui/DonutRing";
 import ProgressBar from "@/components/ui/ProgressBar";
 import PageHeader from "@/components/layout/PageHeader";
@@ -10,6 +11,8 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 import CountUp from "@/components/ui/CountUp";
 import ClickSpark from "@/components/ui/ClickSpark";
 import { useUserStore } from "@/lib/store/user";
+import MealLogger from "@/components/nutrition/MealLogger";
+import type { MealLogRow } from "@/lib/types/meal-log";
 
 /* ── Types ── */
 type MealName = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
@@ -293,7 +296,7 @@ function PredictionCard({ pred, onConfirm, onRedo, meal }: {
 
 /* ── Meal Log Modal ── */
 function MealLogModal({
-  meal, onClose, onLog, allergies, medicalConditions, bmiCategory,
+  meal, onClose, onLog, allergies, medicalConditions, bmiCategory, userId,
 }: {
   meal: MealName;
   onClose: () => void;
@@ -301,6 +304,7 @@ function MealLogModal({
   allergies: string[];
   medicalConditions: string[];
   bmiCategory: string;
+  userId: string;
 }) {
   const [mode, setMode]             = useState<LogMode>(null);
   const [describe, setDescribe]     = useState("");
@@ -317,19 +321,16 @@ function MealLogModal({
     setPredicting(false);
   };
 
-  const runPhotoPredict = async () => {
-    setPredicting(true);
-    await new Promise(r => setTimeout(r, 1800));
-    setPrediction({
-      name: "Chicken Biryani",
-      kcal: 520,
-      protein: 36,
-      carbs: 58,
-      fat: 14,
-      confidence: 89,
-      warnings: allergies.includes("Dairy") ? ["Contains ghee (dairy)" ] : [],
+  const handleMealLoggerSuccess = (row: MealLogRow) => {
+    onLog({
+      items: [row.meal_name ?? "Meal"],
+      kcal: row.calories ?? 0,
+      protein: row.protein_g ?? 0,
+      carbs: row.carbs_g ?? 0,
+      fat: row.fat_g ?? 0,
+      time: new Date(row.logged_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
     });
-    setPredicting(false);
+    onClose();
   };
 
   const confirmLog = (pred: Prediction) => {
@@ -476,28 +477,7 @@ function MealLogModal({
                 <span className="font-caption text-[11px] font-light">Back</span>
               </button>
 
-              {!prediction ? (
-                <div className="flex flex-col gap-3">
-                  <div onClick={runPhotoPredict}
-                    className="h-44 rounded-[14px] border-2 border-dashed border-[#BFDBFE] bg-[var(--color-primary-light)] flex flex-col items-center justify-center gap-3 cursor-pointer hover:opacity-90 transition-opacity">
-                    <div className="w-12 h-12 rounded-full bg-[#2563EB]/10 flex items-center justify-center">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="16" rx="3" stroke="#2563EB" strokeWidth="1.75"/><circle cx="12" cy="13" r="4" stroke="#2563EB" strokeWidth="1.75"/><path d="M8 5l2-3h4l2 3" stroke="#2563EB" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </div>
-                    <div className="text-center">
-                      <p className="font-body font-bold text-[13px] text-[var(--color-primary)]">Upload or capture photo</p>
-                      <p className="font-caption text-[10px] font-light text-[var(--color-text-3)]">Tap to simulate AI analysis</p>
-                    </div>
-                  </div>
-                  <button onClick={runPhotoPredict} disabled={predicting}
-                    className="h-11 w-full rounded-[12px] bg-[#2563EB] text-white font-body font-bold text-[13px] flex items-center justify-center gap-2 hover:bg-[#1D4ED8] transition-colors">
-                    {predicting ? (
-                      <><svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="white" strokeWidth="1.75" strokeDasharray="22" strokeDashoffset="8"/></svg>Analysing photo…</>
-                    ) : "Analyse Food"}
-                  </button>
-                </div>
-              ) : (
-                <PredictionCard pred={prediction} onConfirm={() => confirmLog(prediction)} onRedo={() => setPrediction(null)} meal={meal}/>
-              )}
+              <MealLogger userId={userId} onSuccess={handleMealLoggerSuccess} />
             </div>
           )}
 
@@ -563,7 +543,14 @@ function MealLogModal({
 
 /* ── Main Page ── */
 export default function NutritionPage() {
-  const { allergies, foodPreferences, medicalConditions, bmiCategory } = useUserStore();
+  const { allergies, foodPreferences, medicalConditions, bmiCategory, email } = useUserStore();
+
+  // Stable QueryClient for TanStack Query — MealLogger calls useQueryClient()
+  // so a QueryClientProvider must be present in the tree above it.
+  const queryClient = useMemo(() => new QueryClient(), []);
+
+  // Use email as the userId for the ML pipeline (non-empty string identifier)
+  const userId = email || "anonymous";
 
   const [logMeal, setLogMeal] = useState<MealName | null>(null);
   const [waterCount, setWaterCount] = useState(7);
@@ -599,6 +586,7 @@ export default function NutritionPage() {
   const nextUnlogged = unloggedMeals[0];
 
   return (
+    <QueryClientProvider client={queryClient}>
     <div className="flex flex-col">
       <PageHeader
         title="NUTRITION"
@@ -815,9 +803,11 @@ export default function NutritionPage() {
             allergies={allergies}
             medicalConditions={medicalConditions}
             bmiCategory={bmiCategory}
+            userId={userId}
           />
         )}
       </AnimatePresence>
     </div>
+    </QueryClientProvider>
   );
 }

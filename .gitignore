@@ -33,6 +33,19 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# ML model weights and data (large binary files — share via Google Drive)
+ml/food_classifier.pth
+ml/data/
+ml/__pycache__/
+ml/tests/__pycache__/
+
+# Python
+*.pyc
+*.pyo
+__pycache__/
+.pytest_cache/
+.hypothesis/
+
 # vercel
 .vercel
 

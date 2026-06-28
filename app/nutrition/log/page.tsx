@@ -1,8 +1,12 @@
 ﻿"use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import PageHeader from "@/components/layout/PageHeader";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
+import { useUserStore } from "@/lib/store/user";
+import MealLogger from "@/components/nutrition/MealLogger";
+import type { MealLogRow } from "@/lib/types/meal-log";
 
 const RESULTS = [
   { name: "Chicken Breast (100g)", brand: "Generic", kcal: 165, protein: 31 },
@@ -13,6 +17,10 @@ const RESULTS = [
 export default function LogMealPage() {
   const [query, setQuery] = useState("");
   const [meal, setMeal] = useState("Lunch");
+  const [showMealLogger, setShowMealLogger] = useState(false);
+  const { email } = useUserStore();
+  const userId = email || "anonymous";
+  const queryClient = useMemo(() => new QueryClient(), []);
   const meals = ["Breakfast", "Lunch", "Dinner", "Snacks"];
 
   return (
@@ -43,13 +51,44 @@ export default function LogMealPage() {
         {/* Quick log methods */}
         <div className="flex gap-2">
           {[
-            { label: "Scan barcode", href: "#" },
-            { label: "AI photo",     href: "#" },
-            { label: "Saved meals",  href: "#" },
+            { label: "Scan barcode" },
+            { label: "AI photo" },
+            { label: "Saved meals" },
           ].map(({ label }) => (
-            <Chip key={label} variant="primary" className="cursor-pointer">{label}</Chip>
+            <Chip
+              key={label}
+              variant="primary"
+              className="cursor-pointer"
+              onClick={label === "AI photo" ? () => setShowMealLogger(true) : undefined}
+            >
+              {label}
+            </Chip>
           ))}
         </div>
+
+        {/* AI Photo MealLogger overlay */}
+        {showMealLogger && (
+          <QueryClientProvider client={queryClient}>
+            <div className="flex flex-col gap-3 rounded-[14px] border border-[var(--color-border)] bg-[var(--color-surface-2)] p-4">
+              <div className="flex items-center justify-between">
+                <p className="font-body font-bold text-[13px] text-[var(--color-text-1)]">AI Photo Analysis</p>
+                <button
+                  onClick={() => setShowMealLogger(false)}
+                  className="w-7 h-7 rounded-[7px] bg-[var(--color-surface)] flex items-center justify-center border border-[var(--color-border)]"
+                  aria-label="Close"
+                >
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="var(--color-text-2)" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              <MealLogger
+                userId={userId}
+                onSuccess={(_row: MealLogRow) => setShowMealLogger(false)}
+              />
+            </div>
+          </QueryClientProvider>
+        )}
 
         {/* Results */}
         <div className="flex flex-col gap-2">
@@ -75,4 +114,3 @@ export default function LogMealPage() {
     </div>
   );
 }
-
