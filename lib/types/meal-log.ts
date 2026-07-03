@@ -6,6 +6,10 @@
  *   - SUPABASE_URL        Supabase project URL
  *   - SUPABASE_SERVICE_KEY  Supabase service-role key
  */
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+export type LogSource = 'photo' | 'description' | 'manual' | 'plan';
+
 export interface MealLogRow {
   id: string;
   user_id: string;
@@ -20,4 +24,24 @@ export interface MealLogRow {
   fat_g: number | null;
   fiber_g: number | null;
   image_url: string | null;
+  // new additive columns
+  meal_type: MealType | null;
+  source: LogSource | null;
+  date: string | null;                // YYYY-MM-DD
+  food_name: string | null;
+}
+
+export interface MealLogInsert {
+  user_id: string;
+  date: string;                       // YYYY-MM-DD
+  meal_type: MealType;
+  source: LogSource;
+  food_name: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  fiber_g?: number;
+  confidence?: number;
+  image_url?: string;
 }

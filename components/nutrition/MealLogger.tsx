@@ -125,6 +125,10 @@ export default function MealLogger({ userId, onSuccess }: MealLoggerProps) {
       fat_g: result.macros.fat_g,
       fiber_g: result.macros.fiber_g,
       image_url: null,
+      meal_type: null,
+      source: 'photo',
+      date: new Date().toISOString().split('T')[0],
+      food_name: selectedTop3Item ? selectedTop3Item.name : result.food,
     };
 
     // 4. Reset component to initial state (req 6.11)

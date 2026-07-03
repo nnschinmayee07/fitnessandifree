@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { MealLogRow } from '@/lib/types/meal-log';
+import { insertMealLog } from '@/lib/nutrition/meal-log';
 
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
@@ -30,6 +31,11 @@ export async function POST(request: Request): Promise<Response> {
 
   const imageField = formData.get('image');
   const userId = formData.get('userId');
+
+  const mealTypeField = formData.get('mealType');
+  const mealType = (typeof mealTypeField === 'string' && ['breakfast','lunch','dinner','snack'].includes(mealTypeField))
+    ? mealTypeField as 'breakfast' | 'lunch' | 'dinner' | 'snack'
+    : 'snack';
 
   // Validate userId
   if (!userId || typeof userId !== 'string' || userId.trim() === '') {
@@ -124,24 +130,23 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // ── Step 4: Insert row into meal_logs ─────────────────────────────────────
-  const { data: savedRow, error: insertError } = await supabase
-    .from('meal_logs')
-    .insert({
+  let savedRow: MealLogRow;
+  try {
+    savedRow = await insertMealLog({
       user_id: userId,
-      logged_at: new Date().toISOString(),
-      meal_name: mlResult.food,
-      confidence: parseFloat(mlResult.confidence) / 100,
+      date: new Date().toISOString().split('T')[0],
+      meal_type: mealType,
+      source: 'photo',
+      food_name: mlResult.food,
       calories: mlResult.macros.calories,
       protein_g: mlResult.macros.protein_g,
       carbs_g: mlResult.macros.carbs_g,
       fat_g: mlResult.macros.fat_g,
       fiber_g: mlResult.macros.fiber_g,
+      confidence: parseFloat(mlResult.confidence) / 100,
       image_url: imageUrl,
-    })
-    .select()
-    .single();
-
-  if (insertError || !savedRow) {
+    });
+  } catch {
     return new Response('Database insert failed', { status: 500 });
   }
 

@@ -27,6 +27,7 @@ interface UserState {
   bmi: number;
   bmiCategory: string;
   // onboarding extras
+  activityLevel: string;
   medicalConditions: string[];
   foodPreferences: string[];
   allergies: string[];
@@ -78,6 +79,7 @@ export const useUserStore = create<UserState>()(
       waterGoal: 3.0,
       bmi: 0,
       bmiCategory: "",
+      activityLevel: "moderately_active",
       medicalConditions: [],
       foodPreferences: [],
       allergies: [],

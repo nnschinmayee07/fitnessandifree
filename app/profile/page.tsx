@@ -7,16 +7,18 @@ import GlowCard from "@/components/ui/GlowCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import CountUp from "@/components/ui/CountUp";
 import { useUserStore } from "@/lib/store/user";
+import { computeTargets } from "@/lib/nutrition/targets";
 
 /* ── Inline edit modal ── */
 function EditModal({ onClose }: { onClose: () => void }) {
-  const { firstName, lastName, email, weightKg, heightCm, age, gender, setUser } = useUserStore();
+  const { firstName, lastName, email, weightKg, heightCm, age, gender, activityLevel, setUser } = useUserStore();
   const [form, setForm] = useState({
     firstName, lastName, email,
     weight: String(weightKg || ""),
     height: String(heightCm || ""),
     age: String(age || ""),
     gender,
+    activityLevel: activityLevel || "moderately_active",
   });
 
   const save = () => {
@@ -29,6 +31,7 @@ function EditModal({ onClose }: { onClose: () => void }) {
       heightCm: parseFloat(form.height) || heightCm,
       age: parseInt(form.age) || age,
       gender: form.gender,
+      activityLevel: form.activityLevel,
     });
     onClose();
   };
@@ -93,7 +96,24 @@ function EditModal({ onClose }: { onClose: () => void }) {
               ))}
             </div>
           </div>
-        </div>
+          <div>
+            <label className="font-body font-bold text-[11px] text-[var(--color-text-3)] block mb-1.5">Activity Level</label>
+            <div className="flex flex-col gap-2">
+              {[
+                { value: "sedentary",          label: "Sedentary",           sub: "Desk job, little exercise" },
+                { value: "lightly_active",     label: "Lightly Active",      sub: "1–3 days/week" },
+                { value: "moderately_active",  label: "Moderately Active",   sub: "3–5 days/week" },
+                { value: "very_active",        label: "Very Active",         sub: "6–7 days/week" },
+                { value: "extra_active",       label: "Extra Active",        sub: "Twice daily / physical job" },
+              ].map(({ value, label, sub }) => (
+                <button key={value} onClick={() => setForm(f => ({ ...f, activityLevel: value }))}
+                  className={`flex items-center justify-between h-12 px-3 rounded-[10px] border-2 font-body text-[12px] transition-all text-left ${form.activityLevel === value ? "border-[#2563EB] bg-[var(--color-primary-light)] text-[var(--color-primary)]" : "border-[var(--color-border)] text-[var(--color-text-2)]"}`}>
+                  <span className="font-bold">{label}</span>
+                  <span className={`font-caption text-[10px] ${form.activityLevel === value ? "text-[#2563EB]/70" : "text-[var(--color-text-3)]"}`}>{sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>        </div>
         <div className="px-5 py-4 border-t border-[var(--color-border)] flex gap-3 flex-shrink-0">
           <button onClick={onClose} className="flex-1 h-11 rounded-[12px] border border-[var(--color-border)] text-[var(--color-text-2)] font-body font-bold text-[13px]">Cancel</button>
           <button onClick={save} className="flex-1 h-11 rounded-[12px] bg-[#2563EB] text-white font-body font-bold text-[13px] hover:bg-[#1D4ED8] transition-colors">Save Changes</button>
@@ -357,7 +377,8 @@ export default function ProfilePage() {
   const store = useUserStore();
   const {
     name, firstName, lastName, email, avatar,
-    goal, level, weightKg, heightCm, age, gender,
+    goal, level, weightKg, heightCm, age, gender, activityLevel,
+    isLoggedIn: _isLoggedIn,
     workoutStreak, nutritionStreak, waterStreak,
     bmi, bmiCategory,
     medicalConditions, foodPreferences, allergies, constraints,
@@ -479,9 +500,68 @@ export default function ProfilePage() {
                 <span className="font-body text-[12px] text-[var(--color-text-2)]">Gender</span>
                 <span className="font-body font-bold text-[12px] text-[var(--color-text-1)]">{gender || "Not set"}</span>
               </div>
+              {/* Activity Level */}
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-[10px] bg-[var(--color-surface-2)] border border-[var(--color-border)] mt-2">
+                <span className="font-body text-[12px] text-[var(--color-text-2)]">Activity Level</span>
+                <span className="font-body font-bold text-[12px] text-[var(--color-text-1)]">
+                  {({
+                    sedentary: "Sedentary",
+                    lightly_active: "Lightly Active",
+                    moderately_active: "Moderately Active",
+                    very_active: "Very Active",
+                    extra_active: "Extra Active",
+                  } as Record<string, string>)[activityLevel] || "Not set"}
+                </span>
+              </div>
             </div>
           </GlowCard>
         </ScrollReveal>
+
+        {/* ── Calorie Targets ── */}
+        {weightKg && heightCm && age ? (() => {
+          const gM: 'male'|'female'|'other' = gender.toLowerCase() === 'male' ? 'male' : gender.toLowerCase() === 'female' ? 'female' : 'other';
+          const aM = (['sedentary','lightly_active','moderately_active','very_active','extra_active'].includes(activityLevel) ? activityLevel : 'moderately_active') as 'sedentary'|'lightly_active'|'moderately_active'|'very_active'|'extra_active';
+          const maintain = computeTargets(weightKg, heightCm, age, gM, aM, 'maintain');
+          const lose     = computeTargets(weightKg, heightCm, age, gM, aM, 'lose');
+          const gain     = computeTargets(weightKg, heightCm, age, gM, aM, 'gain');
+          const currentGoalKey = goal.toLowerCase().includes('loss') || goal.toLowerCase().includes('lose') ? 'lose' : goal.toLowerCase().includes('gain') || goal.toLowerCase().includes('muscle') ? 'gain' : 'maintain';
+          const scenarios = [
+            { key: 'lose',     label: 'Lose Weight',     kcal: lose.target_calories,     color: '#F87171', desc: '500 kcal deficit' },
+            { key: 'maintain', label: 'Maintain Weight', kcal: maintain.target_calories, color: '#4ADE80', desc: 'TDEE' },
+            { key: 'gain',     label: 'Gain / Bulk',     kcal: gain.target_calories,     color: '#60A5FA', desc: '300 kcal surplus' },
+          ];
+          return (
+            <ScrollReveal delay={0.055}>
+              <GlowCard glowColor="37,99,235">
+                <div className="p-4">
+                  <p className="font-heading text-[.875rem] text-[var(--color-text-1)] tracking-wide mb-3">DAILY CALORIE TARGETS</p>
+                  <div className="flex flex-col gap-2">
+                    {scenarios.map(({ key, label, kcal, color, desc }) => {
+                      const isActive = key === currentGoalKey;
+                      return (
+                        <div key={key} className="flex items-center justify-between px-3 py-3 rounded-[12px] border-2 transition-all"
+                          style={{ borderColor: isActive ? color : 'var(--color-border)', background: isActive ? color + '12' : 'var(--color-surface-2)' }}>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-body font-bold text-[13px]" style={{ color: isActive ? color : 'var(--color-text-1)' }}>{label}</span>
+                            <span className="font-caption text-[10px] font-light text-[var(--color-text-3)]">{desc}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-metric text-[1.25rem]" style={{ color }}>{kcal}</span>
+                            <span className="font-caption text-[10px] font-light text-[var(--color-text-3)]">kcal</span>
+                            {isActive && <span className="font-caption text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: color + '20', color }}>YOUR GOAL</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="font-caption text-[9px] font-light text-[var(--color-text-3)] mt-3 text-center">
+                    Based on your body metrics · Update goal in Edit Profile
+                  </p>
+                </div>
+              </GlowCard>
+            </ScrollReveal>
+          );
+        })() : null}
 
         {/* ── Streaks detail ── */}
         <ScrollReveal delay={0.06}>
