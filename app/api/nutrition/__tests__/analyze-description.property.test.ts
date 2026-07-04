@@ -129,17 +129,17 @@ describe('Property 13: analyze-description route input validation', () => {
 
   beforeEach(() => {
     // Save original env var
-    originalApiKey = process.env.ANTHROPIC_API_KEY;
+    originalApiKey = process.env.GROQ_API_KEY;
     // Set API key so we don't hit 500 from missing key
-    process.env.ANTHROPIC_API_KEY = 'test-key-for-validation';
+    process.env.GROQ_API_KEY = 'test-key-for-validation';
   });
 
   afterEach(() => {
     // Restore original env var
     if (originalApiKey === undefined) {
-      delete process.env.ANTHROPIC_API_KEY;
+      delete process.env.GROQ_API_KEY;
     } else {
-      process.env.ANTHROPIC_API_KEY = originalApiKey;
+      process.env.GROQ_API_KEY = originalApiKey;
     }
   });
 
@@ -206,28 +206,28 @@ describe('Property 13: analyze-description route input validation', () => {
   );
 });
 
-describe('Property 12 (partial): ANTHROPIC_API_KEY environment variable guard', () => {
+describe('Property 12 (partial): GROQ_API_KEY environment variable guard', () => {
   let originalApiKey: string | undefined;
 
   beforeEach(() => {
-    originalApiKey = process.env.ANTHROPIC_API_KEY;
+    originalApiKey = process.env.GROQ_API_KEY;
   });
 
   afterEach(() => {
     if (originalApiKey === undefined) {
-      delete process.env.ANTHROPIC_API_KEY;
+      delete process.env.GROQ_API_KEY;
     } else {
-      process.env.ANTHROPIC_API_KEY = originalApiKey;
+      process.env.GROQ_API_KEY = originalApiKey;
     }
   });
 
   it(
-    'returns HTTP 500 with "ANTHROPIC_API_KEY not configured" when env var is absent',
+    'returns HTTP 500 with "GROQ_API_KEY not configured" when env var is absent',
     async () => {
       await fc.assert(
         fc.asyncProperty(validRequestBodyArb, async (body) => {
           // Remove API key
-          delete process.env.ANTHROPIC_API_KEY;
+          delete process.env.GROQ_API_KEY;
 
           const request = makeJSONRequest(body);
           const response = await POST(request);
@@ -237,7 +237,7 @@ describe('Property 12 (partial): ANTHROPIC_API_KEY environment variable guard', 
 
           // Body must contain the expected error message
           const responseText = await response.text();
-          expect(responseText).toBe('ANTHROPIC_API_KEY not configured');
+          expect(responseText).toBe('GROQ_API_KEY not configured');
         }),
         { numRuns: 20 },
       );
@@ -251,7 +251,7 @@ describe('Property 12 (partial): ANTHROPIC_API_KEY environment variable guard', 
 
 describe('Property 13 — example-based sanity checks', () => {
   beforeEach(() => {
-    process.env.ANTHROPIC_API_KEY = 'test-key';
+    process.env.GROQ_API_KEY = 'test-key';
   });
 
   it('returns 400 when description is missing', async () => {
@@ -323,19 +323,19 @@ describe('Property 12 — example-based sanity check', () => {
   let originalApiKey: string | undefined;
 
   beforeEach(() => {
-    originalApiKey = process.env.ANTHROPIC_API_KEY;
+    originalApiKey = process.env.GROQ_API_KEY;
   });
 
   afterEach(() => {
     if (originalApiKey === undefined) {
-      delete process.env.ANTHROPIC_API_KEY;
+      delete process.env.GROQ_API_KEY;
     } else {
-      process.env.ANTHROPIC_API_KEY = originalApiKey;
+      process.env.GROQ_API_KEY = originalApiKey;
     }
   });
 
-  it('returns 500 with correct message when ANTHROPIC_API_KEY is absent', async () => {
-    delete process.env.ANTHROPIC_API_KEY;
+  it('returns 500 with correct message when GROQ_API_KEY is absent', async () => {
+    delete process.env.GROQ_API_KEY;
 
     const req = makeJSONRequest({
       description: 'I had two rotis with dal',
@@ -345,6 +345,6 @@ describe('Property 12 — example-based sanity check', () => {
     const res = await POST(req);
     expect(res.status).toBe(500);
     const text = await res.text();
-    expect(text).toBe('ANTHROPIC_API_KEY not configured');
+    expect(text).toBe('GROQ_API_KEY not configured');
   });
 });

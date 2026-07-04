@@ -8,6 +8,7 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 import CountUp from "@/components/ui/CountUp";
 import { useUserStore } from "@/lib/store/user";
 import { computeTargets } from "@/lib/nutrition/targets";
+import WhatsAppOptInModal from "@/components/WhatsAppOptInModal";
 
 /* ── Inline edit modal ── */
 function EditModal({ onClose }: { onClose: () => void }) {
@@ -382,12 +383,14 @@ export default function ProfilePage() {
     workoutStreak, nutritionStreak, waterStreak,
     bmi, bmiCategory,
     medicalConditions, foodPreferences, allergies, constraints,
+    whatsappOptIn,
     isDark, toggleDark,
     logout,
   } = store;
 
   const [editOpen, setEditOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
+  const [whatsappOpen, setWhatsappOpen] = useState(false);
   const [logoutConfirm, setLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
@@ -722,7 +725,7 @@ export default function ProfilePage() {
               <div className="overflow-hidden rounded-[18px]">
                 {[
                   { label: "Preferences",    icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="var(--color-text-2)" strokeWidth="1.25"/><path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13M3.05 3.05l1.06 1.06M9.89 9.89l1.06 1.06M3.05 10.95l1.06-1.06M9.89 4.11l1.06-1.06" stroke="var(--color-text-2)" strokeWidth="1.25" strokeLinecap="round"/></svg>, val: "Diet, Health & Goal", action: () => setPrefsOpen(true) },
-                  { label: "Notifications", icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5a3.5 3.5 0 013.5 3.5v2.5l1 1.5H2.5l1-1.5V5A3.5 3.5 0 017 1.5z" stroke="var(--color-text-2)" strokeWidth="1.25"/><path d="M5.5 11a1.5 1.5 0 003 0" stroke="var(--color-text-2)" strokeWidth="1.25" strokeLinecap="round"/></svg>, val: "On" },
+                  { label: "WhatsApp Alerts", icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5a3.5 3.5 0 013.5 3.5v2.5l1 1.5H2.5l1-1.5V5A3.5 3.5 0 017 1.5z" stroke="var(--color-text-2)" strokeWidth="1.25"/><path d="M5.5 11a1.5 1.5 0 003 0" stroke="var(--color-text-2)" strokeWidth="1.25" strokeLinecap="round"/></svg>, val: whatsappOptIn ? "On" : "Off", action: () => setWhatsappOpen(true) },
                   { label: "Units",          icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2v10M2 4.5h2.5M2 8h4M2 11.5h2" stroke="var(--color-text-2)" strokeWidth="1.25" strokeLinecap="round"/></svg>, val: "Metric" },
                   { label: "Connected Apps", icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="4" width="4.5" height="4.5" rx="1.25" stroke="var(--color-text-2)" strokeWidth="1.25"/><rect x="8" y="4" width="4.5" height="4.5" rx="1.25" stroke="var(--color-text-2)" strokeWidth="1.25"/><path d="M6 6.5h2" stroke="var(--color-text-2)" strokeWidth="1.25" strokeLinecap="round"/></svg>, val: "0 linked" },
                   { label: "Data & Privacy", icon: <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5L12 3.5V7c0 2.5-2 4.5-5 5.5C4 12.5 2 10.5 2 7V3.5L7 1.5z" stroke="var(--color-text-2)" strokeWidth="1.25" strokeLinejoin="round"/></svg>, val: "" },
@@ -795,6 +798,7 @@ export default function ProfilePage() {
       <AnimatePresence>
         {editOpen && <EditModal onClose={() => setEditOpen(false)}/>}
         {prefsOpen && <PreferencesModal onClose={() => setPrefsOpen(false)}/>}
+        {whatsappOpen && <WhatsAppOptInModal onClose={() => setWhatsappOpen(false)}/>}
       </AnimatePresence>
     </div>
   );

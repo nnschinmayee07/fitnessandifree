@@ -135,7 +135,15 @@ describe('Integration: POST /api/nutrition/analyze', () => {
 
     expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body).toEqual(SAVED_ROW);
+    // The route merges the saved DB row with ML result fields (food, confidence
+    // as a percentage string, top3, macros) that MealLogger needs to render.
+    expect(body).toEqual({
+      ...SAVED_ROW,
+      food: ML_RESPONSE_BODY.food,
+      confidence: ML_RESPONSE_BODY.confidence,
+      top3: ML_RESPONSE_BODY.top3,
+      macros: ML_RESPONSE_BODY.macros,
+    });
   });
 
   // ── Test 2: Supabase Storage upload failure → 502 ──────────────────────────

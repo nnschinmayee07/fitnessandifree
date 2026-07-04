@@ -32,6 +32,10 @@ interface UserState {
   foodPreferences: string[];
   allergies: string[];
   constraints: string[];
+  // WhatsApp alerts opt-in
+  phoneNumber: string;
+  whatsappOptIn: boolean;
+  hasSeenWhatsappPrompt: boolean;
   // theme
   isDark: boolean;
   setUser: (data: Partial<Omit<UserState, "setUser" | "login" | "logout" | "toggleDark" | "computeBmi">>) => void;
@@ -84,6 +88,9 @@ export const useUserStore = create<UserState>()(
       foodPreferences: [],
       allergies: [],
       constraints: [],
+      phoneNumber: "",
+      whatsappOptIn: false,
+      hasSeenWhatsappPrompt: false,
       isDark: false,
       setUser: (data) => set((s) => ({ ...s, ...data })),
       login: (firstName, lastName, email) =>

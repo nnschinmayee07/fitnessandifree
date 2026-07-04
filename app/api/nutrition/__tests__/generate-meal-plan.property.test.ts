@@ -10,9 +10,9 @@
  * Property 11 — isValidMealSuggestions validator:
  *   Correct shape → true; wrong shape, wrong length, missing field → false.
  *
- * Property 12 (partial) — ANTHROPIC_API_KEY guard:
+ * Property 12 (partial) — GROQ_API_KEY guard:
  *   Absent key + any valid userId → route SHALL return 500 with
- *   "ANTHROPIC_API_KEY not configured".
+ *   "GROQ_API_KEY not configured".
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -378,16 +378,16 @@ describe('Property 11 — isValidMealSuggestions validator', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Property 12 (partial) — ANTHROPIC_API_KEY guard
+// Property 12 (partial) — GROQ_API_KEY guard
 // Validates: Requirement 10.4
 // ---------------------------------------------------------------------------
 
-describe('Property 12 (partial) — ANTHROPIC_API_KEY guard', () => {
-  const savedKey = process.env.ANTHROPIC_API_KEY;
+describe('Property 12 (partial) — GROQ_API_KEY guard', () => {
+  const savedKey = process.env.GROQ_API_KEY;
 
   beforeEach(() => {
     // Ensure key is absent for all tests in this suite
-    delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.GROQ_API_KEY;
     process.env.SUPABASE_URL = 'http://test';
     process.env.SUPABASE_SERVICE_KEY = 'test-service-key';
   });
@@ -395,13 +395,13 @@ describe('Property 12 (partial) — ANTHROPIC_API_KEY guard', () => {
   afterEach(() => {
     // Restore original key (may be undefined)
     if (savedKey !== undefined) {
-      process.env.ANTHROPIC_API_KEY = savedKey;
+      process.env.GROQ_API_KEY = savedKey;
     } else {
-      delete process.env.ANTHROPIC_API_KEY;
+      delete process.env.GROQ_API_KEY;
     }
   });
 
-  it('returns 500 with "ANTHROPIC_API_KEY not configured" for any valid userId when key is absent', async () => {
+  it('returns 500 with "GROQ_API_KEY not configured" for any valid userId when key is absent', async () => {
     await fc.assert(
       fc.asyncProperty(validUserIdArb, async (userId) => {
         const request = new Request(
@@ -417,7 +417,7 @@ describe('Property 12 (partial) — ANTHROPIC_API_KEY guard', () => {
 
         expect(response.status).toBe(500);
         const body = await response.text();
-        expect(body).toBe('ANTHROPIC_API_KEY not configured');
+        expect(body).toBe('GROQ_API_KEY not configured');
       }),
       { numRuns: 100 },
     );

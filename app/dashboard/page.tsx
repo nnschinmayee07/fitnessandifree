@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { motion, type Variants } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { useUserStore } from "@/lib/store/user";
 import DonutRing from "@/components/ui/DonutRing";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -12,6 +12,7 @@ import ClickSpark from "@/components/ui/ClickSpark";
 import Grainient from "@/components/ui/Grainient";
 import GlowCard from "@/components/ui/GlowCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
+import WhatsAppOptInModal from "@/components/WhatsAppOptInModal";
 
 const hero: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const pop: Variants  = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -38,8 +39,13 @@ const BMI_SUGGESTIONS: Record<string, { text: string; color: string }> = {
 };
 
 export default function DashboardPage() {
-  const { firstName, avatar, workoutStreak, nutritionStreak, waterStreak, stepsToday, stepsGoal, heartRate, sleepHours, waterLiters, waterGoal, bmi, bmiCategory } = useUserStore();
+  const { firstName, avatar, workoutStreak, nutritionStreak, waterStreak, stepsToday, stepsGoal, heartRate, sleepHours, waterLiters, waterGoal, bmi, bmiCategory, whatsappOptIn, hasSeenWhatsappPrompt } = useUserStore();
   const [waterCount, setWaterCount] = useState(7);
+  // Local override for this session only — the store fields are the source of
+  // truth (updated by the modal itself once the user answers, and rehydrated
+  // from localStorage after mount for returning users).
+  const [dismissedThisSession, setDismissedThisSession] = useState(false);
+  const whatsappPromptOpen = !whatsappOptIn && !hasSeenWhatsappPrompt && !dismissedThisSession;
 
   const name = firstName || "Athlete";
   const hour = new Date().getHours();
@@ -352,6 +358,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      <AnimatePresence>
+        {whatsappPromptOpen && (
+          <WhatsAppOptInModal onClose={() => setDismissedThisSession(true)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
