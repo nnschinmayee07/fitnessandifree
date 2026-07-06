@@ -1,0 +1,18 @@
+const { data, error } = await supabase.storage
+  .from('meal-images')
+  .createSignedUrl(path, expiresIn); // expiresIn: 1–3600 seconds
+SUPABASE_URL=https://<your-project-ref>.supabase.co
+SUPABASE_SERVICE_KEY=<service-role-secret-key>   # never expose this client-side
+ML_MODEL_URL=http://localhost:8000               # or your deployed inference server URL
+ "dependencies": {
+    "@supabase/supabase-js": "2.49.8",
+    "@tanstack/react-query": "^5.101.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.41.0",
+    "lucide-react": "^1.21.0",
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "tailwind-merge": "^3.6.0",
+    "zustand": "^5.0.14"
+  },
