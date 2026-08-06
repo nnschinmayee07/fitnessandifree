@@ -48,6 +48,13 @@ ml/tests/__pycache__/
 __pycache__/
 .pytest_cache/
 .hypothesis/
+venv/
+env/
+
+# LightGBM meal recommender data and models
+lib/meal-recommender/data/
+lib/meal-recommender/venv/
+lib/meal-recommender/meal_ranker.txt
 
 # vercel
 .vercel

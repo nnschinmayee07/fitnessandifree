@@ -148,3 +148,10 @@ main > * { animation: page-in 0.3s ease-out both; }
   background: #2563EB;
   color: white;
 }
+
+/* ── Force scroll for modal content ── */
+.force-scroll {
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}

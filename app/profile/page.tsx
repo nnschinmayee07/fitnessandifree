@@ -12,7 +12,7 @@ import WhatsAppOptInModal from "@/components/WhatsAppOptInModal";
 
 /* ── Inline edit modal ── */
 function EditModal({ onClose }: { onClose: () => void }) {
-  const { firstName, lastName, email, weightKg, heightCm, age, gender, activityLevel, setUser } = useUserStore();
+  const { firstName, lastName, email, weightKg, heightCm, age, gender, activityLevel, cuisinePreference, goal, setUser } = useUserStore();
   const [form, setForm] = useState({
     firstName, lastName, email,
     weight: String(weightKg || ""),
@@ -20,9 +20,11 @@ function EditModal({ onClose }: { onClose: () => void }) {
     age: String(age || ""),
     gender,
     activityLevel: activityLevel || "moderately_active",
+    cuisinePreference: cuisinePreference || null,
   });
 
-  const save = () => {
+  const save = async () => {
+    // Update Zustand store (for UI)
     setUser({
       firstName: form.firstName,
       lastName: form.lastName,
@@ -33,7 +35,53 @@ function EditModal({ onClose }: { onClose: () => void }) {
       age: parseInt(form.age) || age,
       gender: form.gender,
       activityLevel: form.activityLevel,
+      cuisinePreference: form.cuisinePreference,
     });
+
+    // Save to database (for meal recommendations)
+    // Map the goal from user store format to API format
+    const goalMapping: Record<string, 'lose' | 'maintain' | 'gain'> = {
+      'Weight Loss': 'lose',
+      'fat-loss': 'lose',
+      'Maintain Weight': 'maintain',
+      'maintain': 'maintain',
+      'Build Muscle': 'gain',
+      'muscle': 'gain',
+      'gain': 'gain',
+    };
+    const mappedGoal = goalMapping[goal] || 'maintain';
+
+    try {
+      const payload = {
+        userId: email,
+        age: parseInt(form.age) || age,
+        gender: form.gender.toLowerCase() === 'male' ? 'male' : 
+                form.gender.toLowerCase() === 'female' ? 'female' : 'other',
+        height_cm: parseFloat(form.height) || heightCm,
+        weight_kg: parseFloat(form.weight) || weightKg,
+        activity_level: form.activityLevel,
+        goal: mappedGoal,
+        cuisine_preference: form.cuisinePreference,
+      };
+
+      const response = await fetch('/api/nutrition/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to save nutrition profile:', errorText);
+        alert(`Failed to save: ${errorText}`);
+      } else {
+        console.log('Nutrition profile saved successfully');
+      }
+    } catch (error) {
+      console.error('Error saving nutrition profile:', error);
+      alert('Error saving profile. Please try again.');
+    }
+
     onClose();
   };
 
@@ -111,6 +159,26 @@ function EditModal({ onClose }: { onClose: () => void }) {
                   className={`flex items-center justify-between h-12 px-3 rounded-[10px] border-2 font-body text-[12px] transition-all text-left ${form.activityLevel === value ? "border-[#2563EB] bg-[var(--color-primary-light)] text-[var(--color-primary)]" : "border-[var(--color-border)] text-[var(--color-text-2)]"}`}>
                   <span className="font-bold">{label}</span>
                   <span className={`font-caption text-[10px] ${form.activityLevel === value ? "text-[#2563EB]/70" : "text-[var(--color-text-3)]"}`}>{sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="font-body font-bold text-[11px] text-[var(--color-text-3)] block mb-1.5">Cuisine Preference</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: null, label: "No Preference" },
+                { value: "American", label: "American" },
+                { value: "Italian", label: "Italian" },
+                { value: "Mexican", label: "Mexican" },
+                { value: "Asian", label: "Asian" },
+                { value: "Mediterranean", label: "Mediterranean" },
+                { value: "South Indian", label: "South Indian" },
+                { value: "North Indian", label: "North Indian" },
+              ].map(({ value, label }) => (
+                <button key={label} onClick={() => setForm(f => ({ ...f, cuisinePreference: value }))}
+                  className={`h-10 rounded-[10px] border-2 font-body text-[12px] transition-all ${form.cuisinePreference === value ? "border-[#2563EB] bg-[var(--color-primary-light)] text-[var(--color-primary)]" : "border-[var(--color-border)] text-[var(--color-text-2)]"}`}>
+                  {label}
                 </button>
               ))}
             </div>
@@ -514,6 +582,13 @@ export default function ProfilePage() {
                     very_active: "Very Active",
                     extra_active: "Extra Active",
                   } as Record<string, string>)[activityLevel] || "Not set"}
+                </span>
+              </div>
+              {/* Cuisine Preference */}
+              <div className="flex items-center justify-between px-3 py-2.5 rounded-[10px] bg-[var(--color-surface-2)] border border-[var(--color-border)] mt-2">
+                <span className="font-body text-[12px] text-[var(--color-text-2)]">Cuisine Preference</span>
+                <span className="font-body font-bold text-[12px] text-[var(--color-text-1)]">
+                  {store.cuisinePreference || "No preference"}
                 </span>
               </div>
             </div>

@@ -41,6 +41,14 @@ export default function MealLoggingModal({
 }: MealLoggingModalProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("photo");
   const [resetKey, setResetKey] = useState(0);
+  const scrollContainerRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      // Force scroll styles directly on the DOM element
+      node.style.setProperty('overflow-y', 'scroll', 'important');
+      node.style.setProperty('overflow-x', 'hidden', 'important');
+      node.style.setProperty('-webkit-overflow-scrolling', 'touch');
+    }
+  }, []);
 
   // Reset active tab and increment resetKey whenever the modal closes
   useEffect(() => {
@@ -55,25 +63,6 @@ export default function MealLoggingModal({
   const handleTabSuccess = useCallback(() => {
     onSuccess(mealType);
   }, [onSuccess, mealType]);
-
-  // Prevent scroll on body while modal is open (works on iOS Safari too)
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const scrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      document.body.style.overflow = "";
-      window.scrollTo(0, scrollY);
-    };
-  }, [isOpen]);
 
   const mealLabel =
     mealType.charAt(0).toUpperCase() + mealType.slice(1);
@@ -107,7 +96,7 @@ export default function MealLoggingModal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.98 }}
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="relative z-10 max-h-[90vh] w-full sm:max-w-lg rounded-t-[24px] sm:rounded-[20px] bg-[var(--color-surface-1)] flex flex-col"
+            className="relative z-10 h-[90vh] sm:max-h-[90vh] w-full sm:max-w-lg rounded-t-[24px] sm:rounded-[20px] bg-[var(--color-surface-1)] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* ── Header ── */}
@@ -157,8 +146,12 @@ export default function MealLoggingModal({
 
             {/* ── Tab panels — scrollable area ── */}
             <div
-              className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6"
-              style={{ WebkitOverflowScrolling: "touch" }}
+              ref={scrollContainerRef}
+              className="flex-1 px-5 pb-6 force-scroll"
+              style={{ 
+                minHeight: 0,
+                overscrollBehavior: "contain"
+              }}
             >
               {/* Photo tab */}
               <div

@@ -32,6 +32,7 @@ interface UserState {
   foodPreferences: string[];
   allergies: string[];
   constraints: string[];
+  cuisinePreference: string | null;
   // WhatsApp alerts opt-in
   phoneNumber: string;
   whatsappOptIn: boolean;
@@ -88,6 +89,7 @@ export const useUserStore = create<UserState>()(
       foodPreferences: [],
       allergies: [],
       constraints: [],
+      cuisinePreference: null,
       phoneNumber: "",
       whatsappOptIn: false,
       hasSeenWhatsappPrompt: false,

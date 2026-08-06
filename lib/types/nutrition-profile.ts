@@ -9,6 +9,8 @@ export type Goal = 'lose' | 'maintain' | 'gain';
 
 export type BmiCategory = 'Underweight' | 'Normal' | 'Overweight' | 'Obese';
 
+export type CuisineType = 'American' | 'Italian' | 'Mexican' | 'Asian' | 'Mediterranean' | 'South Indian' | 'North Indian';
+
 export interface NutritionProfileRow {
   id: string;                         // UUID
   user_id: string;                    // email from useUserStore
@@ -25,6 +27,7 @@ export interface NutritionProfileRow {
   target_carbs_g: number;
   target_fat_g: number;
   target_water_ml: number;
+  cuisine_preference?: CuisineType | null;  // Optional: user's preferred cuisine type
   created_at: string;
   updated_at: string;
 }

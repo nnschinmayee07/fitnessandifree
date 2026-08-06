@@ -1,0 +1,31 @@
+{
+  "version": "1.0.0",
+  "feature_count": 7,
+  "feature_names": [
+    "macro_delta_calories",
+    "macro_delta_protein",
+    "macro_delta_carbs",
+    "macro_delta_fat",
+    "cuisine_match",
+    "meal_slot_match",
+    "days_since_last_eaten"
+  ],
+  "feature_types": [
+    "float",
+    "float",
+    "float",
+    "float",
+    "float",
+    "float",
+    "float"
+  ],
+  "feature_descriptions": [
+    "Absolute difference between meal calories and remaining calories",
+    "Absolute difference between meal protein and remaining protein",
+    "Absolute difference between meal carbs and remaining carbs",
+    "Absolute difference between meal fat and remaining fat",
+    "Binary: 1 if meal cuisine matches user preference, 0 otherwise",
+    "Binary: 1 if meal slot matches requested slot, 0 otherwise",
+    "Days since user last ate this meal (999 if never)"
+  ]
+}

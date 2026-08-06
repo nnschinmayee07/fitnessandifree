@@ -67,7 +67,7 @@ export default function MealPlan({ userId, date, remainingMacros }: MealPlanProp
   const queryClient = useQueryClient();
 
   // Read profile data directly from Zustand (same source as /profile page)
-  const { weightKg, heightCm, age, gender, goal, activityLevel, foodPreferences, allergies } = useUserStore();
+  const { weightKg, heightCm, age, gender, goal, activityLevel, cuisinePreference, foodPreferences, allergies } = useUserStore();
 
   // Determine if we have enough data to generate a plan
   const hasProfile = Boolean(weightKg && heightCm && age && gender && goal);
@@ -94,6 +94,7 @@ export default function MealPlan({ userId, date, remainingMacros }: MealPlanProp
       bmi_category: bmiCategory,
       activity_level: mappedActivity,
       goal: mappedGoal,
+      cuisine_preference: cuisinePreference || null,
       ...targets,
     };
   };
@@ -136,11 +137,18 @@ export default function MealPlan({ userId, date, remainingMacros }: MealPlanProp
   // ── Log meal mutation ──────────────────────────────────────────────────
   const logMutation = useMutation<unknown, Error, { suggestion: MealSuggestion; index: number }>({
     mutationFn: async ({ suggestion }) => {
+      console.log('[MealPlan] Logging meal:', {
+        meal_type: suggestion.meal_type,
+        meal_name: suggestion.meal_name,
+        date,
+        userId
+      });
+      
       const res = await fetch("/api/nutrition/meal-log", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          source: "meal_plan",
+          source: "plan",  // Changed from "meal_plan" to match API validation
           meal_type: suggestion.meal_type,
           date,
           userId,
@@ -151,12 +159,25 @@ export default function MealPlan({ userId, date, remainingMacros }: MealPlanProp
           fat_g: suggestion.fat_g,
         }),
       });
-      if (!res.ok) throw new Error("Failed to log meal");
-      return res.json();
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('[MealPlan] Failed to log meal:', errorText);
+        throw new Error(`Failed to log meal: ${errorText}`);
+      }
+      
+      const result = await res.json();
+      console.log('[MealPlan] Meal logged successfully:', result);
+      return result;
     },
     onSuccess: (_data, variables) => {
+      console.log('[MealPlan] Marking meal as logged, index:', variables.index);
       setLoggedIndices((prev) => new Set(prev).add(variables.index));
       queryClient.invalidateQueries({ queryKey: ["meal-logs", userId, date] });
+    },
+    onError: (error) => {
+      console.error('[MealPlan] Log mutation error:', error);
+      setPlanError(`Failed to log meal: ${error.message}`);
     },
   });
 

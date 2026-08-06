@@ -6,7 +6,7 @@ import Button from "@/components/ui/Button";
 import { ProfileSkeleton } from "@/components/nutrition/Skeletons";
 import { computeBmi, getBmiCategory, computeTargets } from "@/lib/nutrition/targets";
 import { useUserStore } from "@/lib/store/user";
-import type { ActivityLevel, Goal, NutritionProfileRow } from "@/lib/types/nutrition-profile";
+import type { ActivityLevel, Goal, NutritionProfileRow, CuisineType } from "@/lib/types/nutrition-profile";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -19,6 +19,7 @@ interface ProfileFormFields {
   weight_kg: string;
   activity_level: ActivityLevel | "";
   goal: Goal | "";
+  cuisine_preference: CuisineType | "";
 }
 
 interface FieldErrors {
@@ -28,6 +29,7 @@ interface FieldErrors {
   weight_kg?: string;
   activity_level?: string;
   goal?: string;
+  cuisine_preference?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -53,6 +55,16 @@ const GOAL_LABELS: Record<Goal, string> = {
   lose: "Lose Weight",
   maintain: "Maintain Weight",
   gain: "Gain Weight",
+};
+
+const CUISINE_LABELS: Record<CuisineType, string> = {
+  American: "American",
+  Italian: "Italian",
+  Mexican: "Mexican",
+  Asian: "Asian",
+  Mediterranean: "Mediterranean",
+  "South Indian": "South Indian",
+  "North Indian": "North Indian",
 };
 
 // ---------------------------------------------------------------------------
@@ -219,6 +231,7 @@ export default function ProfileForm({ userId: userIdProp }: ProfileFormProps) {
     weight_kg: "",
     activity_level: "",
     goal: "",
+    cuisine_preference: "",
   });
 
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -250,6 +263,7 @@ export default function ProfileForm({ userId: userIdProp }: ProfileFormProps) {
       weight_kg: profile.weight_kg != null ? String(profile.weight_kg) : "",
       activity_level: profile.activity_level ?? "",
       goal: profile.goal ?? "",
+      cuisine_preference: profile.cuisine_preference ?? "",
     });
   }, [summaryData]);
 
@@ -263,6 +277,7 @@ export default function ProfileForm({ userId: userIdProp }: ProfileFormProps) {
       weight_kg: number;
       activity_level: ActivityLevel;
       goal: Goal;
+      cuisine_preference?: CuisineType | null;
     }) => {
       const res = await fetch("/api/nutrition/profile", {
         method: "POST",
@@ -320,6 +335,7 @@ export default function ProfileForm({ userId: userIdProp }: ProfileFormProps) {
         weight_kg: true,
         activity_level: true,
         goal: true,
+        cuisine_preference: true,
       };
       setTouched(allTouched);
 
@@ -335,6 +351,7 @@ export default function ProfileForm({ userId: userIdProp }: ProfileFormProps) {
       const gender = fields.gender as "male" | "female" | "other";
       const activity_level = fields.activity_level as ActivityLevel;
       const goal = fields.goal as Goal;
+      const cuisine_preference = fields.cuisine_preference || null;
 
       // Compute targets on client before sending (server will also compute)
       const targets = computeTargets(weight_kg, height_cm, age, gender, activity_level, goal);
@@ -347,6 +364,7 @@ export default function ProfileForm({ userId: userIdProp }: ProfileFormProps) {
         weight_kg,
         activity_level,
         goal,
+        cuisine_preference: cuisine_preference as CuisineType | null,
         ...targets,
       } as Parameters<typeof mutation.mutate>[0]);
     },
@@ -503,6 +521,30 @@ export default function ProfileForm({ userId: userIdProp }: ProfileFormProps) {
           ))}
         </select>
         {touched.goal && <FieldError message={errors.goal} />}
+      </div>
+
+      {/* ── Cuisine Preference ── */}
+      <div>
+        <label htmlFor="pf-cuisine" className={labelClass}>
+          Cuisine Preference (Optional)
+        </label>
+        <select
+          id="pf-cuisine"
+          className={inputClass}
+          value={fields.cuisine_preference}
+          onChange={(e) => handleChange("cuisine_preference", e.target.value)}
+          onBlur={() => handleBlur("cuisine_preference")}
+          aria-describedby={errors.cuisine_preference ? "pf-cuisine-error" : undefined}
+          aria-invalid={Boolean(errors.cuisine_preference)}
+        >
+          <option value="">No preference</option>
+          {(Object.entries(CUISINE_LABELS) as [CuisineType, string][]).map(([val, label]) => (
+            <option key={val} value={val}>
+              {label}
+            </option>
+          ))}
+        </select>
+        {touched.cuisine_preference && <FieldError message={errors.cuisine_preference} />}
       </div>
 
       {/* ── Mutation error ── */}

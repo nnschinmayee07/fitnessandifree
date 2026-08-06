@@ -146,8 +146,7 @@ function DateNavigator({
 
       <button
         onClick={() => onDateChange(offsetDate(date, +1))}
-        disabled={isToday}
-        className="w-9 h-9 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-surface-2)] flex items-center justify-center hover:border-[#2563EB]/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-9 h-9 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-surface-2)] flex items-center justify-center hover:border-[#2563EB]/40 transition-colors"
         aria-label="Next day"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
