@@ -15,6 +15,7 @@ import {
   logMLEngineError,
   createTimer,
 } from './logger';
+import { MLEngineError, InvalidMLResponseError } from './errors';
 
 // ============================================================================
 // Constants
@@ -37,7 +38,7 @@ const ML_REQUEST_TIMEOUT_MS = 10_000;
 // Error Classes (Re-exported from centralized errors module)
 // ============================================================================
 
-export { MLEngineError, InvalidMLResponseError } from './errors';
+export { MLEngineError, InvalidMLResponseError };
 
 // ============================================================================
 // Validation Functions

@@ -52,7 +52,7 @@ async function verifyMealsTable() {
       });
     
     if (slotError) {
-      console.error('❌ Error getting meal slot counts:', slotError.message);
+      console.error('❌ Error getting meal slot counts:', slotError);
       return false;
     }
     
@@ -75,7 +75,7 @@ async function verifyMealsTable() {
       });
     
     if (cuisineError) {
-      console.error('❌ Error getting cuisine counts:', cuisineError.message);
+      console.error('❌ Error getting cuisine counts:', cuisineError);
       return false;
     }
     

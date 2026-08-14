@@ -25,12 +25,13 @@ import {
   logTransactionRollback,
   createTimer,
 } from './logger';
+import { DatabaseError } from './errors';
 
 // ============================================================================
 // Error Classes (Re-exported from centralized errors module)
 // ============================================================================
 
-export { DatabaseError } from './errors';
+export { DatabaseError };
 
 // ============================================================================
 // Core CRUD Operations
